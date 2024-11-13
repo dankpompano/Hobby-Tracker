@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.javafxmysqltemplate.TaskController">
+    <children>
+        <TabPane fx:id="categoryPane" layoutX="121.0" layoutY="27.0" prefHeight="284.0" prefWidth="357.0" tabClosingPolicy="UNAVAILABLE">
+            <tabs>
+                <Tab fx:id="generalTab" text="General">
+                    <content>
+                        <VBox fx:id="listVBox" prefHeight="246.0" prefWidth="357.0">
+                            <children>
+                                <ListView fx:id="listView" prefHeight="299.0" prefWidth="357.0" />
+                            </children>
+                        </VBox>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+      <HBox layoutX="121.0" layoutY="311.0" minHeight="25.0" prefHeight="25.0" prefWidth="357.0">
+         <children>
+              <Button mnemonicParsing="false" onAction="#onAddTaskClick" prefWidth="100.0" text="Add Task" textAlignment="CENTER">
+               <HBox.margin>
+                  <Insets />
+               </HBox.margin>
+            </Button>
+            <Button mnemonicParsing="false" prefWidth="100.0" text="Delete" onAction="#onDeleteClick">
+               <HBox.margin>
+                  <Insets left="180.0" />
+               </HBox.margin>
+            </Button>
+         </children>
+      </HBox>
+      <HBox layoutX="121.0" layoutY="336.0" minHeight="25.0" prefHeight="25.0" prefWidth="357.0">
+         <children>
+      
+                                                                                                                                    
+             <Button mnemonicParsing="false" onAction="#onAddCategoryClick" prefWidth="102.0" text="Add Category">
+               <HBox.margin>
+                  <Insets />
+               </HBox.margin>
+            </Button>
+              <Button mnemonicParsing="false" prefWidth="101.0" text="Completed" onAction="#onCompleted">
+               <HBox.margin>
+                  <Insets left="178.0" />
+               </HBox.margin>
+            </Button>
+         </children>
+      </HBox>
+
+        <Label fx:id="mainPage" />
+        <Button layoutX="14.0" layoutY="14.0" mnemonicParsing="false" onAction="#onBackButtonClick" prefHeight="25.0" prefWidth="79.0" text="Back" />
+    </children>
+</AnchorPane>

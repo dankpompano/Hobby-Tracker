@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.javafxmysqltemplate.HelloController">
+
+<VBox alignment="CENTER" layoutX="45.0" layoutY="14.0" spacing="20.0">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+    <Label alignment="CENTER" text="Welcome to Hobby Tracker! Please enter your name below." textAlignment="CENTER">
+         <font>
+            <Font size="18.0" />
+         </font></Label>
+</VBox>
+    <TextField fx:id="NameStatusTextField" layoutX="183.0" layoutY="80.0" prefHeight="25.0" prefWidth="235.0" />
+
+    <!--SAVE BUTTON-->
+    <Button layoutX="210.0" layoutY="125.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="70.0" text="Save" textAlignment="CENTER" onAction="#onSaveNameButtonClick"/>
+
+    <!--NEXT BUTTON-->
+    <Label fx:id="mainPage"/>
+    <Button layoutX="315.0" layoutY="125.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="70.0" text="Next" textAlignment="CENTER" onAction="#onNextButtonClick"/>
+
+</AnchorPane>
