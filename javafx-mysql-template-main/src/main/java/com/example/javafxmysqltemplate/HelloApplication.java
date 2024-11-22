@@ -1,10 +1,11 @@
 package com.example.javafxmysqltemplate;
+
 import com.example.database.Database;
 import javafx.application.Application;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Tab;
@@ -19,7 +20,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static com.example.database.Database.newConnection;
-import com.example.javafxmysqltemplate.HelloController;
 
 public class HelloApplication extends Application {
     public String getUserNameFromQuery;

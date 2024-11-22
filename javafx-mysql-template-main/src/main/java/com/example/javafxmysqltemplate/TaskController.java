@@ -11,7 +11,6 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.sql.*;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -23,7 +22,7 @@ public class TaskController {
     @FXML
     VBox listVBox;
     @FXML
-    Tab generalTab;
+    Tab allTasksTab;
     @FXML
     ListView listView;
     @FXML
@@ -125,6 +124,7 @@ public class TaskController {
         if (selectedTab != null) {
             VBox vbox = (VBox) selectedTab.getContent();
             ListView<String> listView = (ListView<String>) vbox.getChildren().get(0);
+            Optional string = ;
             String selectedTask = listView.getSelectionModel().getSelectedItem();
 
 
@@ -138,7 +138,7 @@ public class TaskController {
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
-            } else if (selectedTab != null && !Objects.equals(selectedTab.getText(), "General")) {
+            } else if (selectedTab != null && !Objects.equals(selectedTab.getText(), "All Tasks")) {
                 categoryPane.getTabs().remove(selectedTab);
                 try (Connection conn = Database.newConnection()) {
                     try (PreparedStatement preparedStmt = conn.prepareStatement(deleteTab)) {
@@ -213,15 +213,15 @@ public class TaskController {
         }
     }
     //gets all the tasks in the Database on that day
-    public void retreiveTasks() {
+    public void retrieveTasks() {
         currentDate = getCurrentDate();
         try (Connection conn = Database.newConnection()) {
-            String retreiveTasks = "SELECT TaskName FROM todo WHERE CurrentDate = ?";
-            try (PreparedStatement preparedStmt = conn.prepareStatement(retreiveTasks)) {
+            String retrieveTasks = "SELECT TaskName FROM todo WHERE CurrentDate = ?";
+            try (PreparedStatement preparedStmt = conn.prepareStatement(retrieveTasks)) {
                 preparedStmt.setDate(1, currentDate);
                 ResultSet tasks = preparedStmt.executeQuery();
 
-                VBox vbox = (VBox) generalTab.getContent();
+                VBox vbox = (VBox) allTasksTab.getContent();
                 ListView<String> listView = (ListView<String>) vbox.getChildren().get(0);
 
                 while(tasks.next()){

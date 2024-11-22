@@ -14,7 +14,7 @@
     <children>
         <TabPane fx:id="categoryPane" layoutX="121.0" layoutY="27.0" prefHeight="284.0" prefWidth="357.0" tabClosingPolicy="UNAVAILABLE">
             <tabs>
-                <Tab fx:id="generalTab" text="General">
+                <Tab fx:id="allTasksTab" text="All Tasks">
                     <content>
                         <VBox fx:id="listVBox" prefHeight="246.0" prefWidth="357.0">
                             <children>
