@@ -124,7 +124,7 @@ public class TaskController {
         if (selectedTab != null) {
             VBox vbox = (VBox) selectedTab.getContent();
             ListView<String> listView = (ListView<String>) vbox.getChildren().get(0);
-            Optional string = ;
+//            Optional string = ;
             String selectedTask = listView.getSelectionModel().getSelectedItem();
 
 
