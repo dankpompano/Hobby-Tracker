@@ -11,7 +11,7 @@
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
     </padding>
 
-<!--    <Label fx:id="welcomeText"/>-->
+<!--    <Label fx:id="mainLabel"/>-->
 <!--    <Button text="Hello!" onAction="#onHelloButtonClick"/>-->
     <Button text="Hobby Tracker" onAction="#onStartHobbyTrackerButtonClick"/>
 

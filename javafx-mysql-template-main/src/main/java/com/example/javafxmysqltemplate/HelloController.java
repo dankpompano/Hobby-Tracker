@@ -18,7 +18,7 @@ public class HelloController {
     @FXML
     public TextField NameStatusTextField;
     @FXML
-    private Label mainLabel;
+    private Label mainLabel = new Label("");
     @FXML
     private Label mainPage;
     @FXML
@@ -32,50 +32,16 @@ public class HelloController {
     protected void onStartHobbyTrackerButtonClick() throws SQLException {
         try (Connection conn = newConnection()) {
             try (PreparedStatement preparedStmt = conn.prepareStatement("SELECT UserName FROM personaluser")) {
-                try (ResultSet resultSet = preparedStmt.executeQuery()) {
-                    getUserNameFromQuery = String.valueOf(resultSet);
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
+                ResultSet resultSet = preparedStmt.executeQuery();
+                if (resultSet.next()) {
+                    getUserNameFromQuery = resultSet.getString("UserName");
                 }
             }
+
+            mainLabel.setText("Welcome back, " + getUserNameFromQuery);
+            System.out.println(getUserNameFromQuery);
+
         }
-
-        //checks whether the username is empty or not
-        //if it isn't empty, takes you to the insert name tab
-        //otherwise, takes you to the main tab
-
-//        if (getUserNameFromQuery != null) {
-//            try {
-//                FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("hobbyTrackerMainPage-view.fxml"));
-//                //FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("insertUserName-view.fxml"));
-//
-//                Parent root = fxmlLoader.load();
-//                Scene scene = new Scene(root, 600, 400);
-//
-//                Stage stage = (Stage) helloController.getScene().getWindow();
-//                stage.setScene(scene);
-//                stage.setTitle("Hobby Tracker");
-//                stage.show();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//         else {
-//            try {
-//                FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("insertUserName-view.fxml"));
-//                //fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("insertUserName-view.fxml"));
-//                Parent root = fxmlLoader.load();
-//                Scene scene = new Scene(root, 600, 400);
-//
-//                Stage stage = (Stage) helloController.getScene().getWindow();
-//                stage.setScene(scene);
-//                stage.setTitle("Hobby Tracker");
-//                stage.show();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//    }
-
 }
 
 
@@ -83,8 +49,6 @@ public class HelloController {
     @FXML
     protected void onSaveNameButtonClick() throws SQLException {
         userName = NameStatusTextField.getText();
-        saveName(userName);
-        System.out.println(userName);
 
         if(!userName.trim().isEmpty()){
             saveName(userName);

@@ -1,6 +1,7 @@
 package com.example.javafxmysqltemplate;
 
 import com.example.database.Database;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -11,6 +12,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -22,7 +24,7 @@ public class TaskController {
     @FXML
     VBox listVBox;
     @FXML
-    Tab allTasksTab;
+    Tab allTasksTab = new Tab();
     @FXML
     ListView listView;
     @FXML
@@ -30,6 +32,9 @@ public class TaskController {
     String userName;
     private String taskName;
     private java.sql.Date currentDate;
+    Optional<String> task;
+    Optional<String> result;
+    int categoryId;
 
 
     @FXML
@@ -37,35 +42,72 @@ public class TaskController {
         TextInputDialog dialog = new TextInputDialog();
         dialog.setHeaderText("Enter your tasks:");
         dialog.setContentText("Task Name:");
-        Optional<String> task = dialog.showAndWait();
-        String insertTaskName = "INSERT INTO todo (TaskName,CurrentDate,Completed,UserName) VALUES (?,?,?,?)";
+        task = dialog.showAndWait();
+        String insertTaskName = "INSERT INTO todo (TaskName,CurrentDate,Completed,UserName,CategoryID) VALUES (?,?,?,?,?)";
         taskName = String.valueOf(task);
 
-        task.ifPresent(name -> {
+        if(task.isPresent()){
+            taskName = task.get();
             Tab categoryTab = categoryPane.getSelectionModel().getSelectedItem();
+            categoryId = getCategoryID(categoryTab.getText());
+            System.out.println(categoryId +"ID");
+            System.out.println(taskName + " = taskname");
+            System.out.println(task.get() + "other");
 
-            //add items into list
             if (categoryTab != null) {
+                try (Connection conn = Database.newConnection()) {
+                    java.sql.Date currentDate = new java.sql.Date(System.currentTimeMillis());
+                    //inserts name into the table
+                    try (PreparedStatement preparedStmt = conn.prepareStatement(insertTaskName)) {
+                        preparedStmt.setString(1, task.get());
+                        preparedStmt.setString(2, String.valueOf(currentDate));
+                        preparedStmt.setBoolean(3, false);
+                        preparedStmt.setString(4, userName);
+                        preparedStmt.setInt(5, categoryId);
+                        preparedStmt.execute();
+                    }
+                } catch (SQLException sql) {
+                    sql.printStackTrace();
+                }
+
+
+                //update UI
                 VBox vbox = (VBox) categoryTab.getContent();
                 ListView<String> listView = (ListView<String>) vbox.getChildren().get(0);
-                listView.getItems().add(name);
+                listView.getItems().add(taskName);
             }
-        });
-
-        // Query stuff: save tasks into database
-        try (Connection conn = Database.newConnection()) {
-            java.sql.Date currentDate = new java.sql.Date(System.currentTimeMillis());
-            //inserts name into the table
-            try (PreparedStatement preparedStmt = conn.prepareStatement(insertTaskName)) {
-                preparedStmt.setString(1, String.valueOf(task));
-                preparedStmt.setString(2, String.valueOf(currentDate));
-                preparedStmt.setBoolean(3, false);
-                preparedStmt.setString(4, userName);
-                preparedStmt.execute();
-            }
-        } catch (SQLException sql) {
-            sql.printStackTrace();
         }
+//        task.ifPresent(name -> {
+//            Tab categoryTab = categoryPane.getSelectionModel().getSelectedItem();
+////            id.set(getCategoryID(categoryTab));
+//            //add items into list
+//            if (categoryTab != null) {
+//                VBox vbox = (VBox) categoryTab.getContent();
+//                ListView<String> listView = (ListView<String>) vbox.getChildren().get(0);
+//                listView.getItems().add(name);
+//            }
+//        });
+
+
+//        // Query stuff: save tasks into database
+//        try (Connection conn = Database.newConnection()) {
+//            java.sql.Date currentDate = new java.sql.Date(System.currentTimeMillis());
+//            //inserts name into the table
+//            try (PreparedStatement preparedStmt = conn.prepareStatement(insertTaskName)) {
+//                preparedStmt.setString(1, String.valueOf(task));
+//                preparedStmt.setString(2, String.valueOf(currentDate));
+//                preparedStmt.setBoolean(3, false);
+//                preparedStmt.setString(4, userName);
+//                preparedStmt.setInt(5,categoryId);
+//                preparedStmt.execute();
+//                boolean taskPresent = task.isPresent();
+//                if (taskPresent) {
+//                    System.out.println(task.get());
+//                }
+//            }
+//        } catch (SQLException sql) {
+//            sql.printStackTrace();
+//        }
     }
 
     @FXML
@@ -89,23 +131,27 @@ public class TaskController {
         TextInputDialog dialog = new TextInputDialog();
         dialog.setHeaderText("Enter a name for your new category tab:");
         dialog.setContentText("Category Name:");
-        Optional<String> result = dialog.showAndWait();
+        result = dialog.showAndWait();
 
         // If the user provided a name, create a new tab with that name
         result.ifPresent(name -> {
             Tab newTab = new Tab(name);
             newTab.setId("tab");
-            VBox vbox = new VBox();
+            listVBox = new VBox();
             ListView<String> listView = new ListView<>();
-            newTab.setContent(vbox);
+            newTab.setContent(listVBox);
 
-            vbox.getChildren().addAll(listView);
+            listVBox.getChildren().addAll(listView);
             categoryPane.getTabs().add(newTab);
+
+//            VBox vbox = new VBox();
+//            newTab.setContent(list);
+//            vbox.getChildren().addAll(listView);
 
             try (Connection conn = Database.newConnection()) {
                 String insertCategory = "INSERT INTO category (CatName, CategoryID) VALUES (?,?)";
                 try (PreparedStatement preparedStmt = conn.prepareStatement(insertCategory)) {
-                    preparedStmt.setString(1, String.valueOf(result));
+                    preparedStmt.setString(1, result.get());
                     preparedStmt.setInt(2, 0);
                     preparedStmt.execute();
                 }
@@ -124,7 +170,7 @@ public class TaskController {
         if (selectedTab != null) {
             VBox vbox = (VBox) selectedTab.getContent();
             ListView<String> listView = (ListView<String>) vbox.getChildren().get(0);
-//            Optional string = ;
+
             String selectedTask = listView.getSelectionModel().getSelectedItem();
 
 
@@ -138,11 +184,11 @@ public class TaskController {
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
-            } else if (selectedTab != null && !Objects.equals(selectedTab.getText(), "All Tasks")) {
+            } else if (!Objects.equals(selectedTab.getText(), "All Tasks")) { //selectedTab != null &&
                 categoryPane.getTabs().remove(selectedTab);
                 try (Connection conn = Database.newConnection()) {
                     try (PreparedStatement preparedStmt = conn.prepareStatement(deleteTab)) {
-                        preparedStmt.setString(1, String.valueOf(selectedTab));
+                        preparedStmt.setString(1, selectedTab.getText());
                         preparedStmt.execute();
                     }
                 } catch (SQLException e) {
@@ -178,7 +224,7 @@ public class TaskController {
                                 try (Connection conn = Database.newConnection()) {
                                     String updateCategory = "UPDATE todo SET Completed = ? WHERE TaskName = ?";
                                     try (PreparedStatement preparedStmt = conn.prepareStatement(updateCategory)) {
-                                        String taskText = selectedTask != null ? selectedTask : "";
+                                        String taskText = !selectedTask.isEmpty() ? selectedTask : "";
                                         preparedStmt.setBoolean(1, true);
                                         preparedStmt.setString(2, taskText);
                                         preparedStmt.executeUpdate();
@@ -197,21 +243,60 @@ public class TaskController {
     //updates the tabs with the already saved categorys in the system
     @FXML
     public void retrieveCategorys() {
+        ArrayList<String> results = new ArrayList<>();
         try (Connection conn = Database.newConnection()) {
             String updateCategory = "SELECT CatName FROM category";
             try (PreparedStatement preparedStmt = conn.prepareStatement(updateCategory)) {
                 ResultSet categorys = preparedStmt.executeQuery();
                 while (categorys.next()) {
-                    String catName = categorys.getString("CatName");
-                    Tab tab = new Tab();
-                    tab.setText(catName);
-                    categoryPane.getTabs().add(tab);
+                    String value = categorys.getString("CatName");
+                    results.add(value);
+                }
+
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        Platform.runLater(() -> {
+            for (String str : results) {
+                Tab newTab = new Tab(str);
+                newTab.setId(str);
+                listVBox = new VBox();
+                ListView<String> listView = new ListView<>();
+                newTab.setContent(listVBox);
+
+                listVBox.getChildren().add(listView);
+                categoryPane.getTabs().add(newTab);
+
+                System.out.println(str);
+            }
+        });
+    }
+
+    private int getCategoryID(String tabName) {
+        String getQuery = "SELECT CategoryID FROM category WHERE CatName = ?";
+
+        try (Connection conn = Database.newConnection()) {
+            PreparedStatement preparedStatement = conn.prepareStatement(getQuery);
+            preparedStatement.setString(1,tabName);
+            try (ResultSet id = preparedStatement.executeQuery()) {
+//                String catName = id.getString("CatName");
+                if(id.next()){
+                    return id.getInt("CategoryID");
+                }
+                else {
+                    return 0;
                 }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
+
+
+
+
+
     //gets all the tasks in the Database on that day
     public void retrieveTasks() {
         currentDate = getCurrentDate();
@@ -221,10 +306,10 @@ public class TaskController {
                 preparedStmt.setDate(1, currentDate);
                 ResultSet tasks = preparedStmt.executeQuery();
 
-                VBox vbox = (VBox) allTasksTab.getContent();
-                ListView<String> listView = (ListView<String>) vbox.getChildren().get(0);
+//                VBox vbox = (VBox) allTasksTab.getContent();
+//                ListView<String> listView = (ListView<String>) vbox.getChildren().get(0);
 
-                while(tasks.next()){
+                while (tasks.next()) {
                     String taskName = tasks.getString("TaskName");
                     listView.getItems().add(taskName);
                 }
@@ -234,11 +319,15 @@ public class TaskController {
         }
     }
 
-    private Date getCurrentDate(){
+    private Date getCurrentDate() {
         currentDate = new java.sql.Date(System.currentTimeMillis());
         return currentDate;
     }
 
+    public void initialize() {
+        retrieveCategorys();
+        retrieveTasks();
+    }
 }
 
 
