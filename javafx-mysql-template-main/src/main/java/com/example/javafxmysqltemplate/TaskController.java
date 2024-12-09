@@ -1,6 +1,7 @@
 package com.example.javafxmysqltemplate;
 
 import com.example.database.Database;
+import com.mysql.cj.protocol.Resultset;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -13,8 +14,11 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import static com.example.database.Database.newConnection;
 
 public class TaskController {
     @FXML
@@ -45,14 +49,16 @@ public class TaskController {
         task = dialog.showAndWait();
         String insertTaskName = "INSERT INTO todo (TaskName,CurrentDate,Completed,UserName,CategoryID) VALUES (?,?,?,?,?)";
         taskName = String.valueOf(task);
+        userName = getUserName();
+        System.out.println(userName);
 
-        if(task.isPresent()){
+        if (task.isPresent()) {
             taskName = task.get();
             Tab categoryTab = categoryPane.getSelectionModel().getSelectedItem();
             categoryId = getCategoryID(categoryTab.getText());
-            System.out.println(categoryId +"ID");
-            System.out.println(taskName + " = taskname");
-            System.out.println(task.get() + "other");
+//            System.out.println(categoryId +"ID");
+//            System.out.println(taskName + " = taskname");
+//            System.out.println(task.get() + "other");
 
             if (categoryTab != null) {
                 try (Connection conn = Database.newConnection()) {
@@ -268,11 +274,34 @@ public class TaskController {
                 listVBox.getChildren().add(listView);
                 categoryPane.getTabs().add(newTab);
 
-                System.out.println(str);
+//                System.out.println(str);
             }
         });
     }
 
+
+//    private int getCategoryID(String tabName) {
+//        String getQuery = "SELECT CategoryID FROM category WHERE CatName = ?";
+//
+//        try (Connection conn = Database.newConnection();
+//             PreparedStatement preparedStatement = conn.prepareStatement(getQuery)) {
+//
+//            preparedStatement.setString(1, tabName);
+//
+//            try (ResultSet id = preparedStatement.executeQuery()) {
+//                if (id.next()) {
+//                    return id.getInt("CategoryID");
+//                }
+//            }
+//        } catch (SQLException e) {
+//            throw new RuntimeException("Error retrieving CategoryID for tab: " + tabName, e);
+//        }
+//
+//        // If no result is found, return a special value or throw an exception
+//        throw new IllegalArgumentException("No category found with the name: " + tabName);
+//    }
+
+    //gets the categoryID from the tab names
     private int getCategoryID(String tabName) {
         String getQuery = "SELECT CategoryID FROM category WHERE CatName = ?";
 
@@ -280,11 +309,32 @@ public class TaskController {
             PreparedStatement preparedStatement = conn.prepareStatement(getQuery);
             preparedStatement.setString(1,tabName);
             try (ResultSet id = preparedStatement.executeQuery()) {
-//                String catName = id.getString("CatName");
-                if(id.next()){
+                if (id.next()) {
+                    System.out.println("Found CategoryID: " + categoryId + " for tab: " + tabName); // Debugging
+
                     return id.getInt("CategoryID");
                 }
-                else {
+                else{
+                    System.out.println("No CategoryID found for tab: " + tabName); // Debugging
+
+                    return -1;
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //helper method for retrieveTasks()
+    private int getTaskCategoryID(String taskName) {
+        String query = "SELECT CategoryID FROM todo WHERE TaskName = ?";
+        try (Connection conn = Database.newConnection()) {
+            PreparedStatement preparedStatement = conn.prepareStatement(query);
+            preparedStatement.setString(1, taskName);
+            try (ResultSet id = preparedStatement.executeQuery()) {
+                if (id.next()) {
+                    return id.getInt("CategoryID");
+                } else {
                     return 0;
                 }
             }
@@ -293,30 +343,133 @@ public class TaskController {
         }
     }
 
+    private List<String> getCategoryNames() throws SQLException {
+        String query = "SELECT CatName FROM category";
+        List<String> names = new ArrayList<>();
+        int count = 0;
+        try (Connection conn = Database.newConnection()) {
+            try (PreparedStatement preparedStmt = conn.prepareStatement(query)) {
+                ResultSet categoryNames = preparedStmt.executeQuery();
+                for (Tab tab : categoryPane.getTabs()) {
+                    names.add(categoryNames.getString(count));
+                    ++count;
+                }
+            }
+        }
+        return names;
+    }
 
+    //helper method for retrieveTasks()
+//    private List<String> getTaskNames(){
+//        String query = "SELECT TaskName FROM ";
+//    }
 
 
 
     //gets all the tasks in the Database on that day
-    public void retrieveTasks() {
+    public void retrieveTasks() throws SQLException {
         currentDate = getCurrentDate();
         try (Connection conn = Database.newConnection()) {
-            String retrieveTasks = "SELECT TaskName FROM todo WHERE CurrentDate = ?";
-            try (PreparedStatement preparedStmt = conn.prepareStatement(retrieveTasks)) {
+            String retrieveTasks = "SELECT TaskName, CategoryID FROM todo WHERE CurrentDate = ?";
+            String getCatIdFromTodo = "SELECT CategoryID FROM todo WHERE CategoryID = ?";
+            List<String> categoryNames = new ArrayList<>();
+            Tab allTasks = getTabName("All Tasks");
+            for (Tab tab : categoryPane.getTabs()) {
+                categoryNames.add(tab.getText());
+                System.out.println(categoryNames);
+            }
+            //all tasks are loaded into All Tasks
+            if(allTasks != null){
+                try (PreparedStatement preparedStmt = conn.prepareStatement(retrieveTasks)) {
                 preparedStmt.setDate(1, currentDate);
                 ResultSet tasks = preparedStmt.executeQuery();
+                    while (tasks.next()) {
+                        String taskName = tasks.getString("TaskName");
+                        int catID = tasks.getInt("CategoryID");
+                        System.out.println(taskName);
 
-//                VBox vbox = (VBox) allTasksTab.getContent();
-//                ListView<String> listView = (ListView<String>) vbox.getChildren().get(0);
+                        listView.getItems().add(taskName);
 
-                while (tasks.next()) {
-                    String taskName = tasks.getString("TaskName");
-                    listView.getItems().add(taskName);
+                        for (Tab tab : categoryPane.getTabs()) {
+                            if (tab.getText().equals("All Tasks")) {
+                                continue;
+                            }
+                            int tabCatID = getCategoryID(tab.getText());
+                            System.out.println("Comparing tab category ID: " + tabCatID + " with task category ID: " + catID);
+                            System.out.println(tabCatID);
+                            System.out.println(catID + "category id from todo");
+                            System.out.println(getCategoryID(tab.getText()) + "category id from category");
+
+                            //if the tab isnt All tasks, and tasks categoryID from todoo == the categorid of the tab from categorys. add the task into that category
+                            if(catID == tabCatID) {
+                                VBox categoryVBox = (VBox) tab.getContent();
+                                ListView<String> categoryListView = (ListView<String>) categoryVBox.getChildren().get(0);
+                                categoryListView.getItems().add(taskName);
+                            }
+                    }
                 }
             }
+
+            //get the task name and id for that day
+            //store the task name and id from todoo into variables
+            //get the categoryid from category table
+            //compare the todoCatID to the CategoryCatID
+            //if they are the same, update the UI
+
+
+            //tasks are loaded into their respected Categories based off category id
+//            for (Tab tab : categoryPane.getTabs()) {
+//                if(!tab.getText().equals("All Tasks")) {
+//                    int tabCatID = getCategoryID(tab.getText());
+//                    try (PreparedStatement preparedStmt = conn.prepareStatement(getCatIdFromTodo)) {
+//                        preparedStmt.setInt(1, tabCatID);
+//                        ResultSet tasks = preparedStmt.executeQuery();
+//
+//                        while (tasks.next()) {
+//                            String taskName = tasks.getString("TaskName");
+//                            listView.getItems().add(taskName);
+//                        }
+//                    }
+//                }
+            }
+
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private Tab getTabName(String name){
+        for(Tab tab : categoryPane.getTabs()){
+            if(tab.getText().equals(name)){
+                return tab;
+            }
+        }
+        return null;
+    }
+
+    //updates the tasks based off of their categories
+    private void updateCategoryTasks(){
+//        String getCatIdFromTodo = "SELECT CategoryID FROM todo WHERE CategoryID = ?";
+//        try (PreparedStatement catID = conn.prepareStatement(getCatIdFromTodo)) { //get the id from the todoo
+//            catID.setInt(1,getCategoryID(selectedTab.getText()));
+//            ResultSet toDoId = catID.executeQuery();
+//            id = toDoId.getInt("CategoryID");
+//
+//
+//            if (Objects.equals(selectedTab.getText(), "All Tasks")) { //update all the tasks into AllTasks
+//                while (tasks.next()) {
+//                    String taskName = tasks.getString("TaskName");
+//                    listView.getItems().add(taskName);
+//                }
+//            }
+//            else if(getCategoryID(selectedTab.getText()) == id){ //update the tasks into their respected categories
+//                while (tasks.next()) {
+//                    String taskName = tasks.getString("TaskName");
+//                    listView.getItems().add(taskName);
+//                }
+//            }
+//        }
     }
 
     private Date getCurrentDate() {
@@ -324,9 +477,28 @@ public class TaskController {
         return currentDate;
     }
 
-    public void initialize() {
+    private String getUserName() {
+        String username = "";
+        try (Connection conn = newConnection()) {
+            try (PreparedStatement preparedStmt = conn.prepareStatement("SELECT UserName FROM personaluser")) {
+                ResultSet resultSet = preparedStmt.executeQuery();
+                if (resultSet.next()) {
+                    username = resultSet.getString("UserName");
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return username;
+    }
+
+        public void initialize() {
         retrieveCategorys();
-        retrieveTasks();
+        try {
+            retrieveTasks();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 

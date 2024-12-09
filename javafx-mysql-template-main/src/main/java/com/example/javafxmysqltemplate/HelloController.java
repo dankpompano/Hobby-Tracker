@@ -60,7 +60,7 @@ public class HelloController {
 
     //takes you to the main tab from the insert name tab
     @FXML
-    protected void onNextButtonClick() throws SQLException {
+    protected void onNextButtonClick(){
         try{
             FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("hobbyTrackerMainPage-view.fxml"));
             Parent root = fxmlLoader.load();
@@ -94,7 +94,7 @@ public class HelloController {
         }
     }
     @FXML
-    protected void onTaskButtonClick() throws SQLException {
+    protected void onTaskButtonClick(){
         try{
             FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("tasksPage-view.fxml"));
             Parent root = fxmlLoader.load();
@@ -107,6 +107,26 @@ public class HelloController {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @FXML
+    protected void onCalendarButtonClick(){
+        try{
+            FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("Calendar-view.fxml"));
+            Parent root = fxmlLoader.load();
+            Scene scene = new Scene(root, 600,400);
+
+            Stage stage = (Stage) taskPage.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("Hobby Tracker");
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getUserName(){
+        return getUserNameFromQuery;
     }
     public void setMainLabel() {
         mainLabel.setText("Welcome back " + getUserNameFromQuery);

@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.javafxmysqltemplate.HelloController">
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/22.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.javafxmysqltemplate.HelloController">
    <children>
       <Label fx:id="taskPage" />
       <Button layoutX="160.0" layoutY="170.0" mnemonicParsing="false" onAction="#onTaskButtonClick" prefHeight="57.0" prefWidth="96.0" text="Tasks" textAlignment="CENTER">
@@ -13,7 +13,7 @@
             <Font size="18.0" />
          </font>
       </Button>
-      <Button layoutX="345.0" layoutY="170.0" mnemonicParsing="false" prefHeight="57.0" prefWidth="96.0" text="Calendar" textAlignment="CENTER">
+      <Button layoutX="345.0" layoutY="170.0" mnemonicParsing="false" prefHeight="57.0" prefWidth="96.0" text="Calendar" textAlignment="CENTER" onAction="#onCalendarButtonClick">
          <font>
             <Font size="18.0" />
          </font>
