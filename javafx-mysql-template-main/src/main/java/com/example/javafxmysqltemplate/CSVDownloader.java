@@ -25,7 +25,6 @@ public class CSVDownloader {
 
             int columnCount = resultSet.getMetaData().getColumnCount();
             for(int i = 1; i <= columnCount; ++i){
-                System.out.println(i);
 
                 fileWriter.append(resultSet.getMetaData().getColumnName(i));
                 if (i < columnCount) {
@@ -36,7 +35,6 @@ public class CSVDownloader {
 
             while (resultSet.next()) {
                 for (int i = 1; i <= columnCount; i++) {
-//                    System.out.println(i);
                     fileWriter.append(resultSet.getString(i) != null ? resultSet.getString(i) : "");
                     if (i < columnCount) {
                         fileWriter.append(",");
@@ -44,8 +42,6 @@ public class CSVDownloader {
                 }
                 fileWriter.append("\n");
             }
-
-            System.out.println("CSV file created successfully: " + csv);
 
         } catch (SQLException e) {
             throw new RuntimeException(e);

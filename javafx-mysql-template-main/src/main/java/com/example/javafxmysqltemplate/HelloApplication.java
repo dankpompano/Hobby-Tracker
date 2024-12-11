@@ -24,27 +24,10 @@ import static com.example.database.Database.newConnection;
 
 public class HelloApplication extends Application {
     public String getUserNameFromQuery;
-    @FXML
-    private TabPane categoryPane = new TabPane();
-    @FXML
-    private Label mainPage;
-    @FXML
-    VBox listVBox;
-    @FXML
-    Tab generalTab;
-    @FXML
-    ListView listView;
-    @FXML
-    private Label mainLabel;
-    @FXML
-    private Stage mainStage;
-    @FXML
-//    public TabPane categoryPane;
     private static final String CONFIG_FILE_PATH = "config.properties";
 
     @Override
     public void start(Stage stage) throws IOException, SQLException {
-//        mainLabel.setText("version");
 //        scrape database for the username
         try (Connection conn = newConnection()) {
             try (PreparedStatement preparedStmt = conn.prepareStatement("SELECT UserName FROM personaluser")) {
@@ -58,8 +41,6 @@ public class HelloApplication extends Application {
                 throw new RuntimeException(e);
                 }
         }
-//        mainLabel.setText("Welcome back " + getUserNameFromQuery);
-//        System.out.println(getUserNameFromQuery);
 
 
 
@@ -77,8 +58,6 @@ public class HelloApplication extends Application {
         try {
             Parent root = fxmlLoader.load();
             Scene scene = new Scene(root, 600, 400);
-
-    //stage = (Stage) mainLabel.getScene().getWindow();
             stage.setScene(scene);
             stage.setTitle("Hobby Tracker");
             stage.show();

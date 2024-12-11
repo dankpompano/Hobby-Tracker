@@ -217,10 +217,29 @@ public class CalendarController implements Initializable {
         return (int)(percentage * 100);
     }
 
-    private Date getCurrentDate() {
-        date = new java.sql.Date(System.currentTimeMillis());
-        return date;
+    private void saveCompletedPercentage() {
+        //UPSERT. If the data for that day doesn't exist, insert it. If it does, update it with the new data
+        String query = "INSERT INTO calendar (CurrentDate, DailyPercentage)" +
+                "        VALUES (?, ?)" +
+                "        ON DUPLICATE KEY UPDATE" +
+                "        CurrentDate = VALUES(CurrentDate)," +
+                "                DailyPercentage = VALUES(DailyPercentage)";
+
+        try (Connection conn = Database.newConnection()) {
+            try (PreparedStatement preparedStmt = conn.prepareStatement(query)) {
+                preparedStmt.setDate(1, date);
+                preparedStmt.setInt(2, getCompletedPercentage());
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
+
+        private Date getCurrentDate () {
+            date = new java.sql.Date(System.currentTimeMillis());
+            return date;
+        }
+
 
     @FXML
     protected void onBackButtonClick() throws SQLException {
@@ -240,5 +259,9 @@ public class CalendarController implements Initializable {
     @FXML
     protected void onDownloadClick() throws SQLException {
         CSVDownloader.download();
+    }
+
+    public void initialize(){
+        saveCompletedPercentage();
     }
 }
